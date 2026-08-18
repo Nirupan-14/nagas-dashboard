@@ -216,7 +216,7 @@ function generate() {
   }
 
   // Activities (today)
-  interface RawActivity extends Omit<DashboardActivity, 'id' | 'time'> {
+  interface RawActivity extends Omit<DashboardActivity, 'time'> {
     time: Date;
   }
   const activities: RawActivity[] = [];
