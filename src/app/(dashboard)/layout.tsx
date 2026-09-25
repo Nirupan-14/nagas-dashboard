@@ -17,5 +17,9 @@ export default async function DashboardLayout({
     redirect("/login");
   }
 
+  if (user.mustChangePassword) {
+    redirect("/change-password");
+  }
+
   return <Shell user={user}>{children}</Shell>;
 }

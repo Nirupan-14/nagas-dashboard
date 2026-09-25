@@ -42,13 +42,19 @@ export default function LoginPage() {
       return;
     }
 
+    if (data?.mustChangePassword) {
+      router.push("/change-password");
+      router.refresh();
+      return;
+    }
+
     router.push("/");
     router.refresh();
   }
 
   function fillDemo() {
-    setEmail("admin@nagasresort.com");
-    setPassword("nagas123");
+    setEmail("mosesnirupan@gmail.com");
+    setPassword("1234");
     setDemoMode(true);
   }
 
@@ -70,16 +76,15 @@ export default function LoginPage() {
       <form onSubmit={handleSubmit} className="space-y-4">
         <label className="block">
           <span className="mb-1.5 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-zinc-400">
-            <Mail className="h-3.5 w-3.5 text-gold-500" /> Email address
+            <Mail className="h-3.5 w-3.5 text-gold-500" /> Email or username
           </span>
           <input
-            type="email"
             required
-            autoComplete="email"
+            autoComplete="username"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             className="admin-input"
-            placeholder="admin@nagasresort.com"
+            placeholder="you@nagasresort.com or username"
           />
         </label>
 

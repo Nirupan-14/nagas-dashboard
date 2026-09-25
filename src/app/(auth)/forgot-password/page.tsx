@@ -10,7 +10,6 @@ export default function ForgotPasswordPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [sent, setSent] = useState(false);
-  const [resetUrl, setResetUrl] = useState("");
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -31,7 +30,6 @@ export default function ForgotPasswordPage() {
       return;
     }
 
-    setResetUrl(data?.resetUrl || "");
     setSent(true);
     setLoading(false);
   }
@@ -39,7 +37,7 @@ export default function ForgotPasswordPage() {
   return (
     <AuthShell
       title="Forgot password"
-      subtitle="Enter the email linked to your admin account and we'll send you a reset link."
+      subtitle="Enter the email linked to your admin account and we'll send you a temporary password."
       footer={
         <Link
           href="/login"
@@ -55,26 +53,19 @@ export default function ForgotPasswordPage() {
             <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-emerald-400" />
             <div>
               <p className="text-sm font-semibold text-emerald-300">
-                Reset link sent
+                Temporary password sent
               </p>
               <p className="mt-1 text-sm leading-relaxed text-zinc-300">
                 If an account exists for{" "}
                 <span className="font-medium text-zinc-100">{email}</span>, a
-                password reset link is on its way. The link expires in 1 hour.
+                temporary password has been emailed. It expires in 15 minutes.
+                Sign in with it and you&apos;ll be prompted to set a new password.
               </p>
             </div>
           </div>
-          {resetUrl ? (
-            <Link
-              href={resetUrl}
-              className="gold-bg block rounded-xl px-4 py-3 text-center text-sm font-bold uppercase tracking-widest text-[#0A0A0D]"
-            >
-              Open reset link (demo)
-            </Link>
-          ) : null}
           <Link
             href="/login"
-            className="block rounded-xl border border-zinc-700 px-4 py-3 text-center text-sm font-semibold text-zinc-300 transition hover:border-gold-500/40 hover:text-gold-300"
+            className="gold-bg block rounded-xl px-4 py-3 text-center text-sm font-bold uppercase tracking-widest text-[#0A0A0D]"
           >
             Return to sign in
           </Link>
@@ -92,7 +83,7 @@ export default function ForgotPasswordPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="admin-input"
-              placeholder="admin@nagasresort.com"
+              placeholder="mosesnirupan@gmail.com"
             />
           </label>
 
@@ -112,7 +103,7 @@ export default function ForgotPasswordPage() {
             ) : (
               <Send className="h-4 w-4" />
             )}
-            {loading ? "Sending…" : "Send reset link"}
+            {loading ? "Sending…" : "Send temporary password"}
           </button>
         </form>
       )}

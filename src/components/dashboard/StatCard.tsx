@@ -7,7 +7,7 @@ interface StatCardProps {
   sub?: string;
   icon: LucideIcon;
   delta?: number;
-  accent?: "gold" | "emerald" | "sky" | "rose" | "violet";
+  accent?: "gold" | "emerald" | "sky" | "rose" | "violet" | "amber";
 }
 
 const ACCENTS: Record<string, { bg: string; text: string; ring: string }> = {
@@ -35,6 +35,11 @@ const ACCENTS: Record<string, { bg: string; text: string; ring: string }> = {
     bg: "bg-violet-500/10",
     text: "text-violet-400",
     ring: "group-hover:border-violet-500/40",
+  },
+  amber: {
+    bg: "bg-amber-500/10",
+    text: "text-amber-400",
+    ring: "group-hover:border-amber-500/40",
   },
 };
 

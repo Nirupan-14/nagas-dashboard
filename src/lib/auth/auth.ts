@@ -17,6 +17,9 @@ export interface SessionPayload {
   sub: string;
   email: string;
   name: string;
+  role: string;
+  permissions: string[];
+  mustChangePassword: boolean;
   exp: number;
 }
 

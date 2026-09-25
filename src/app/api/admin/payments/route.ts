@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { getPayments } from '@/lib';
-import { requireAdmin } from '@/lib/api/auth-guard';
+import { requirePermission } from '@/lib/api/auth-guard';
 
 export async function GET(request: NextRequest) {
-  const { response } = await requireAdmin(request);
+  const { response } = await requirePermission(request, 'payments:read');
   if (response) return response;
 
   try {

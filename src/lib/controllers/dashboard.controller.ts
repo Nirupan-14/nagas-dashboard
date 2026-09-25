@@ -1,4 +1,5 @@
 import { getMockData, ROOM_CAPACITY } from '@/lib/mock/dashboard';
+import { getBookingsCollection } from '@/lib/database/mongodb';
 
 export interface DashboardBooking {
   id: string;
@@ -39,6 +40,25 @@ export interface DashboardActivity {
   time: string;
 }
 
+export interface DashboardVehicleBooking {
+  id: string;
+  bookingRef: string;
+  vehicle: string;
+  pickupDate: string;
+  pickupTime: string;
+  endTime: string;
+  destination: string;
+  guest: { name: string; email: string; phone: string };
+  passengers: number;
+  amount: number;
+  paymentStatus: string;
+  paymentMethod: string;
+  transactionId: string;
+  status: string;
+  source: string;
+  createdAt: string;
+}
+
 function startOfDay(offsetDays = 0): Date {
   const d = new Date();
   d.setHours(0, 0, 0, 0);
@@ -52,6 +72,29 @@ function formatDayLabel(date: Date): string {
 
 function timeOf(iso: string): number {
   return new Date(iso).getTime();
+}
+
+interface MongoBookingDoc {
+  _id?: { toString(): string };
+  kind?: string;
+  bookingRef?: string;
+  roomType?: string;
+  vehicleType?: string;
+  date?: string;
+  pickupDate?: string;
+  startTime?: string;
+  pickupTime?: string;
+  destination?: string;
+  guest?: { name?: string; email?: string; phone?: string };
+  guests?: number;
+  passengers?: number;
+  amount?: number;
+  status?: string;
+  source?: string;
+  paymentStatus?: string;
+  paymentMethod?: string;
+  transactionId?: string;
+  createdAt?: string | Date;
 }
 
 export async function getDashboardOverview() {
@@ -160,9 +203,122 @@ export async function getDashboardOverview() {
 }
 
 export async function getBookings(): Promise<DashboardBooking[]> {
+  try {
+    const collection = await getBookingsCollection();
+    const docs: MongoBookingDoc[] = await collection
+      .find({})
+      .sort({ createdAt: -1 })
+      .limit(200)
+      .toArray();
+
+    if (docs.length > 0) {
+      return docs.map((b: MongoBookingDoc): DashboardBooking => {
+        const isVehicle = b.kind === 'vehicle';
+        const startTime = isVehicle ? (b.pickupTime || '00:00') : (b.startTime || '00:00');
+        const startH = Number(startTime.split(':')[0]) || 0;
+        const startM = Number(startTime.split(':')[1]) || 0;
+        const endTotal = startH * 60 + startM + 60;
+        const endH = ((endTotal % 1440) + 1440) % 1440;
+        const pad = (n: number) => String(n).padStart(2, '0');
+        const endTime = `${pad(Math.floor(endH / 60))}:${pad(endH % 60)}`;
+        const dateField = isVehicle ? (b.pickupDate || '') : (b.date || '');
+        const label = isVehicle ? (b.vehicleType || b.roomType || 'Vehicle') : (b.roomType || 'Room');
+        return {
+          id: String(b._id),
+          bookingRef: b.bookingRef || 'NAG-BOOK',
+          guest: {
+            name: b.guest?.name || '—',
+            email: b.guest?.email || '',
+            phone: b.guest?.phone || '',
+          },
+          room: {
+            type: isVehicle ? 'Vehicle' : (b.roomType || ''),
+            label,
+            rate: Number(b.amount) || 0,
+          },
+          checkIn: `${dateField}T${startTime}`,
+          checkOut: `${dateField}T${endTime}`,
+          guests: Number(isVehicle ? b.passengers : b.guests) || 1,
+          nights: 1,
+          amount: Number(b.amount) || 0,
+          status: b.status || 'confirmed',
+          source: b.source || 'website',
+          createdAt: b.createdAt ? new Date(b.createdAt).toISOString() : new Date().toISOString(),
+        };
+      });
+    }
+  } catch (error) {
+    console.error('[dashboard] real bookings unavailable, falling back to mock', error);
+  }
+
   return [...getMockData().bookings].sort(
     (a, b) => timeOf(b.createdAt) - timeOf(a.createdAt)
   );
+}
+
+export async function getVehicleBookings(): Promise<DashboardVehicleBooking[]> {
+  try {
+    const collection = await getBookingsCollection();
+    const docs: MongoBookingDoc[] = await collection
+      .find({ kind: 'vehicle' })
+      .sort({ createdAt: -1 })
+      .limit(200)
+      .toArray();
+
+    if (docs.length > 0) {
+      return docs.map((b: MongoBookingDoc): DashboardVehicleBooking => {
+        const [h, m] = String(b.pickupTime || '00:00').split(':').map(Number);
+        const endTotal = (((h * 60 + (m || 0) + 60) % 1440) + 1440) % 1440;
+        return {
+          id: String(b._id),
+          bookingRef: b.bookingRef || 'NAG-BOOK',
+          vehicle: b.vehicleType || 'Vehicle',
+          pickupDate: b.pickupDate || '',
+          pickupTime: b.pickupTime || '',
+          endTime: `${String(Math.floor(endTotal / 60)).padStart(2, '0')}:${String(endTotal % 60).padStart(2, '0')}`,
+          destination: b.destination || '',
+          guest: {
+            name: b.guest?.name || '—',
+            email: b.guest?.email || '',
+            phone: b.guest?.phone || '',
+          },
+          passengers: Number(b.passengers) || 1,
+          amount: Number(b.amount) || 0,
+          paymentStatus: b.paymentStatus || 'pending',
+          paymentMethod: b.paymentMethod || 'pay-at-pickup',
+          transactionId: b.transactionId || '',
+          status: b.status || 'confirmed',
+          source: b.source || 'website',
+          createdAt: b.createdAt ? new Date(b.createdAt).toISOString() : new Date().toISOString(),
+        };
+      });
+    }
+  } catch (error) {
+    console.error('[dashboard] vehicle bookings unavailable', error);
+  }
+
+  return [];
+}
+
+export async function getVehicleAvailabilityForAdmin(): Promise<Record<string, string[]>> {
+  try {
+    const collection = await getBookingsCollection();
+    const docs: Array<{ vehicleType?: string; pickupDate?: string }> =
+      await collection
+        .find({ kind: 'vehicle', status: { $ne: 'cancelled' } })
+        .project({ vehicleType: 1, pickupDate: 1 })
+        .toArray();
+
+    const mapped: Record<string, string[]> = {};
+    for (const b of docs) {
+      if (!b.vehicleType || !b.pickupDate) continue;
+      (mapped[b.vehicleType] ||= []).push(b.pickupDate);
+    }
+    return mapped;
+  } catch (error) {
+    console.error('[dashboard] vehicle availability unavailable', error);
+    return {};
+  }
 }
 
 export async function getPayments(): Promise<DashboardPayment[]> {

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
+import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
   Bell,
@@ -8,6 +9,7 @@ import {
   Loader2,
   LogOut,
   Menu,
+  Settings,
   UserRound,
 } from "lucide-react";
 import Sidebar, { NAV_ITEMS } from "@/components/dashboard/Sidebar";
@@ -102,6 +104,14 @@ export function Topbar({ user, onMenuClick }: TopbarProps) {
                   </p>
                   <p className="truncate text-xs text-zinc-500">{user.email}</p>
                 </div>
+                <Link
+                  href="/profile"
+                  onClick={() => setMenuOpen(false)}
+                  className="mt-1 flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium text-zinc-300 transition hover:bg-gold-500/10 hover:text-gold-400"
+                >
+                  <Settings className="h-4 w-4" />
+                  Profile &amp; settings
+                </Link>
                 <button
                   onClick={handleLogout}
                   disabled={loggingOut}
@@ -126,6 +136,7 @@ export function Topbar({ user, onMenuClick }: TopbarProps) {
 function pageTitleFromPath(pathname: string): string {
   const path = pathname.split("?")[0];
   if (path === "/") return "Overview";
+  if (path === "/profile") return "Profile & settings";
   for (const item of NAV_ITEMS) {
     if (item.href !== "/" && path.startsWith(item.href)) return item.label;
   }
@@ -133,7 +144,7 @@ function pageTitleFromPath(pathname: string): string {
 }
 
 interface ShellProps {
-  user: { name: string; email: string; role: string };
+  user: { name: string; email: string; role: string; permissions: string[] };
   children: ReactNode;
 }
 
@@ -145,7 +156,11 @@ export default function Shell({ user, children }: ShellProps) {
 
   return (
     <div className="min-h-screen bg-[#0A0A0D]">
-      <Sidebar open={menuOpen} onClose={() => setMenuOpen(false)} />
+      <Sidebar
+        open={menuOpen}
+        onClose={() => setMenuOpen(false)}
+        permissions={user.permissions}
+      />
       <div className="lg:pl-64">
         <Topbar user={user} onMenuClick={() => setMenuOpen(true)} />
         <main className="p-4 sm:p-6 lg:p-8">

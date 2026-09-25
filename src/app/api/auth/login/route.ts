@@ -10,20 +10,20 @@ import {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const email = String(body?.email || '').trim().toLowerCase();
+    const identifier = String(body?.email || '').trim().toLowerCase();
     const password = String(body?.password || '');
 
-    if (!email || !password) {
+    if (!identifier || !password) {
       return NextResponse.json(
-        { error: 'Email and password are required.' },
+        { error: 'Email/username and password are required.' },
         { status: 400 }
       );
     }
 
-    const user = await loginAdmin(email, password);
+    const user = await loginAdmin(identifier, password);
     if (!user) {
       return NextResponse.json(
-        { error: 'Invalid email or password.' },
+        { error: 'Invalid credentials.' },
         { status: 401 }
       );
     }
@@ -32,9 +32,15 @@ export async function POST(request: NextRequest) {
       sub: user.id,
       email: user.email,
       name: user.name,
+      role: user.role,
+      permissions: user.permissions,
+      mustChangePassword: user.mustChangePassword,
     });
 
-    const response = NextResponse.json({ user });
+    const response = NextResponse.json({
+      user,
+      mustChangePassword: user.mustChangePassword,
+    });
     response.cookies.set({
       name: SESSION_COOKIE,
       value: token,

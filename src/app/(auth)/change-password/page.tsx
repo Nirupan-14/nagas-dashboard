@@ -1,8 +1,8 @@
 "use client";
 
-import { Suspense, useState, type FormEvent } from "react";
+import { useState, type FormEvent } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
   CheckCircle2,
@@ -11,13 +11,13 @@ import {
   KeyRound,
   Loader2,
   LockKeyhole,
+  ShieldAlert,
 } from "lucide-react";
 import AuthShell from "@/components/dashboard/AuthShell";
 
-function ResetPasswordForm() {
-  const searchParams = useSearchParams();
-  const token = searchParams.get("token") || "";
-
+export default function ChangePasswordPage() {
+  const router = useRouter();
+  const [currentPassword, setCurrentPassword] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -37,21 +37,17 @@ function ResetPasswordForm() {
       setError("Passwords do not match.");
       return;
     }
-    if (!token) {
-      setError("This reset link is missing its token. Please request a new one.");
-      return;
-    }
 
     setLoading(true);
-    const res = await fetch("/api/auth/reset-password", {
+    const res = await fetch("/api/auth/change-password", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ token, password }),
+      body: JSON.stringify({ currentPassword, password }),
     });
     const data = await res.json().catch(() => ({}));
 
     if (!res.ok) {
-      setError(data?.error || "Unable to reset your password.");
+      setError(data?.error || "Unable to update your password.");
       setLoading(false);
       return;
     }
@@ -63,13 +59,13 @@ function ResetPasswordForm() {
   return (
     <AuthShell
       title="Set a new password"
-      subtitle="Choose a strong password for your admin account."
+      subtitle="You logged in with a temporary password. Choose a strong permanent password to continue."
       footer={
         <Link
-          href="/login"
+          href="/"
           className="inline-flex items-center gap-1.5 font-medium text-gold-400 transition hover:text-gold-300"
         >
-          <ArrowLeft className="h-4 w-4" /> Back to sign in
+          <ArrowLeft className="h-4 w-4" /> Back to dashboard
         </Link>
       }
     >
@@ -82,23 +78,49 @@ function ResetPasswordForm() {
                 Password updated
               </p>
               <p className="mt-1 text-sm leading-relaxed text-zinc-300">
-                Your password has been changed successfully. You can now sign in
-                with your new credentials.
+                Your password has been changed successfully. You can now access
+                the dashboard.
               </p>
             </div>
           </div>
-          <Link
-            href="/login"
-            className="gold-bg block rounded-xl px-4 py-3 text-center text-sm font-bold uppercase tracking-widest text-[#0A0A0D]"
+          <button
+            onClick={() => {
+              router.push("/");
+              router.refresh();
+            }}
+            className="gold-bg block w-full rounded-xl px-4 py-3 text-center text-sm font-bold uppercase tracking-widest text-[#0A0A0D]"
           >
-            Sign in now
-          </Link>
+            Go to dashboard
+          </button>
         </div>
       ) : (
         <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="flex items-start gap-2.5 rounded-xl border border-gold-500/25 bg-gold-500/10 p-3.5">
+            <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0 text-gold-400" />
+            <p className="text-xs leading-relaxed text-gold-200">
+              For security, please set a permanent password now. Your
+              temporary password will stop working once you save a new one.
+            </p>
+          </div>
+
           <label className="block">
             <span className="mb-1.5 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-zinc-400">
-              <LockKeyhole className="h-3.5 w-3.5 text-gold-500" /> New password
+              <LockKeyhole className="h-3.5 w-3.5 text-gold-500" /> Temporary password
+            </span>
+            <input
+              type={showPassword ? "text" : "password"}
+              required
+              autoComplete="current-password"
+              value={currentPassword}
+              onChange={(e) => setCurrentPassword(e.target.value)}
+              className="admin-input"
+              placeholder="Your temporary password"
+            />
+          </label>
+
+          <label className="block">
+            <span className="mb-1.5 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-zinc-400">
+              <KeyRound className="h-3.5 w-3.5 text-gold-500" /> New password
             </span>
             <div className="relative">
               <input
@@ -161,13 +183,5 @@ function ResetPasswordForm() {
         </form>
       )}
     </AuthShell>
-  );
-}
-
-export default function ResetPasswordPage() {
-  return (
-    <Suspense fallback={null}>
-      <ResetPasswordForm />
-    </Suspense>
   );
 }

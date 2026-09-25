@@ -5,6 +5,8 @@ export interface SafeUser {
   name: string;
   email: string;
   role: string;
+  permissions: string[];
+  mustChangePassword: boolean;
 }
 
 export async function getSessionUser(
@@ -17,6 +19,8 @@ export async function getSessionUser(
     id: payload.sub,
     name: payload.name,
     email: payload.email,
-    role: 'admin',
+    role: payload.role || 'admin',
+    permissions: payload.permissions || [],
+    mustChangePassword: !!payload.mustChangePassword,
   };
 }

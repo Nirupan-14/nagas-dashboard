@@ -14,19 +14,27 @@ export async function POST(request: NextRequest) {
     const result = await requestPasswordReset(email);
 
     if (result.sent) {
-      const baseUrl = process.env.APP_URL || request.nextUrl.origin;
-      const resetUrl = `${baseUrl}/reset-password?token=${result.token}`;
       return NextResponse.json({
-        message: 'A password reset link has been generated.',
-        resetUrl,
+        message: 'A temporary password has been sent to your email.',
         email: result.email,
+        name: result.name,
       });
     }
 
-    // Always return the same message to avoid leaking which emails exist.
+    if (result.reason === 'email_failed') {
+      return NextResponse.json(
+        {
+          error:
+            'The temporary password could not be emailed right now. The SMTP configuration may be incorrect. Please contact the administrator.',
+        },
+        { status: 500 }
+      );
+    }
+
+    // Account not found — return the same message to avoid leaking which emails exist.
     return NextResponse.json({
       message:
-        'If an account exists for that email, a password reset link has been sent.',
+        'If an account exists for that email, a temporary password has been sent.',
     });
   } catch (error) {
     console.error('[auth] forgot-password failed', error);
