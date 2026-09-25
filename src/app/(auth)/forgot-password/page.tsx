@@ -83,7 +83,7 @@ export default function ForgotPasswordPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="admin-input"
-              placeholder="mosesnirupan@gmail.com"
+              placeholder="admin@nagasresort.com"
             />
           </label>
 

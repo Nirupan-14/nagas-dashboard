@@ -10,7 +10,6 @@ import {
   LockKeyhole,
   LogIn,
   Mail,
-  ShieldCheck,
 } from "lucide-react";
 import AuthShell from "@/components/dashboard/AuthShell";
 
@@ -21,7 +20,6 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [demoMode, setDemoMode] = useState(false);
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -50,12 +48,6 @@ export default function LoginPage() {
 
     router.push("/");
     router.refresh();
-  }
-
-  function fillDemo() {
-    setEmail("mosesnirupan@gmail.com");
-    setPassword("1234");
-    setDemoMode(true);
   }
 
   return (
@@ -136,16 +128,6 @@ export default function LoginPage() {
           {loading ? "Signing in…" : "Sign in"}
         </button>
       </form>
-
-      <button
-        type="button"
-        onClick={fillDemo}
-        disabled={loading}
-        className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl border border-gold-500/25 bg-gold-500/5 px-4 py-2.5 text-xs font-medium text-gold-400 transition hover:border-gold-500/40 hover:bg-gold-500/10 disabled:opacity-60"
-      >
-        <ShieldCheck className="h-4 w-4" />
-        {demoMode ? "Demo credentials filled — press Sign in" : "Use demo credentials"}
-      </button>
     </AuthShell>
   );
 }

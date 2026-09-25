@@ -15,6 +15,7 @@ import {
   Users,
   X,
 } from "lucide-react";
+import { getSiteOrigin } from "@/lib/vehicles/image";
 
 interface NavItem {
   href: string;
@@ -126,7 +127,7 @@ export default function Sidebar({ open, onClose, permissions }: SidebarProps) {
 
         <div className="border-t border-zinc-800 p-3">
           <Link
-            href="http://localhost:3000"
+            href={getSiteOrigin() || "/"}
             target="_blank"
             className="flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium text-zinc-400 transition hover:bg-zinc-800/60 hover:text-zinc-100"
           >

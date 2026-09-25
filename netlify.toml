@@ -1,0 +1,6 @@
+# These values are not secrets, but the scanner cannot tell them apart from
+# credentials: NEXT_PUBLIC_* values are inlined into client bundles by design,
+# APP_URL is a public site address, and "smtp.gmail.com" is a constant that also
+# lives inside nodemailer's well-known-hosts table.
+[build.environment]
+  SECRETS_SCAN_OMIT_KEYS = "NEXT_PUBLIC_SITE_URL,APP_URL,SMTP_HOST"

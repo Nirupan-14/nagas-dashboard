@@ -274,10 +274,12 @@ export async function setAdminPasswordById(
 }
 
 export async function ensureAdminSeeded(): Promise<void> {
-  const email = (process.env.ADMIN_EMAIL || 'mosesnirupan@gmail.com')
-    .toLowerCase()
-    .trim();
-  const password = process.env.ADMIN_PASSWORD || '1234';
+  const email = (process.env.ADMIN_EMAIL || '').toLowerCase().trim();
+  const password = process.env.ADMIN_PASSWORD || '';
+
+  if (!email || !password) {
+    throw new Error('ADMIN_EMAIL and ADMIN_PASSWORD must be set to seed the admin account.');
+  }
 
   const db = await getDb();
   const existing = await db

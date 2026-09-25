@@ -13,6 +13,7 @@ import VehicleBookingsTable from "@/components/dashboard/vehicles/VehicleBooking
 import VehicleAvailabilityCalendar from "@/components/dashboard/vehicles/VehicleAvailabilityCalendar";
 import { formatCompact } from "@/components/dashboard/format";
 import type { DashboardVehicleBooking } from "@/lib";
+import { getSiteOrigin } from "@/lib/vehicles/image";
 
 interface FleetVehicle {
   id: string;
@@ -128,7 +129,7 @@ export default function VehicleBookingsPage() {
           </p>
         </div>
         <a
-          href="http://localhost:3000/reserve/vehicle"
+          href={`${getSiteOrigin()}/reserve/vehicle`}
           target="_blank"
           rel="noreferrer"
           className="inline-flex items-center gap-1.5 rounded-xl border border-zinc-800 px-4 py-2 text-xs font-semibold text-zinc-300 transition hover:border-gold-500/40 hover:text-gold-300"
